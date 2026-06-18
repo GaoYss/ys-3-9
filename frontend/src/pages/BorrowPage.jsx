@@ -1,5 +1,5 @@
-import { CheckCircle2, Handshake, Save } from 'lucide-react'
-import { useState } from 'react'
+import { AlertTriangle, CheckCircle2, HandCoins, Handshake, Save } from 'lucide-react'
+import { useMemo, useState } from 'react'
 
 import { api } from '../api/client.js'
 import { borrowStatuses } from '../api/options.js'
@@ -22,13 +22,40 @@ export function BorrowPage({ licenses, borrowRecords, reload, notify }) {
   const [form, setForm] = useState(initialForm)
   const [saving, setSaving] = useState(false)
 
-  const setField = (field, value) => setForm((current) => ({ ...current, [field]: value }))
+  const borrowedLicenseMap = useMemo(() => {
+    const map = new Map()
+    borrowRecords.forEach((record) => {
+      if (record.computed_status === 'borrowed' || record.computed_status === 'overdue') {
+        map.set(record.license, record)
+      }
+    })
+    return map
+  }, [borrowRecords])
+
+  const selectedBorrowed = form.license ? borrowedLicenseMap.get(Number(form.license)) : null
+
+  const setField = (field, value) => {
+    if (field === 'license') {
+      const licenseId = Number(value)
+      if (licenseId && borrowedLicenseMap.has(licenseId)) {
+        const record = borrowedLicenseMap.get(licenseId)
+        notify(`该证照正在借出中（借用人：${record.borrower}，借用部门：${record.borrower_department}），不能重复登记借出`)
+      }
+    }
+    setForm((current) => ({ ...current, [field]: value }))
+  }
 
   const submit = async (event) => {
     event.preventDefault()
+    const licenseId = Number(form.license)
+    if (licenseId && borrowedLicenseMap.has(licenseId)) {
+      const record = borrowedLicenseMap.get(licenseId)
+      notify(`该证照正在借出中（借用人：${record.borrower}，借用部门：${record.borrower_department}），不能重复登记借出`)
+      return
+    }
     setSaving(true)
     try {
-      const payload = { ...form, license: Number(form.license) }
+      const payload = { ...form, license: licenseId }
       if (!payload.actual_return_date) {
         payload.actual_return_date = null
       }
@@ -84,13 +111,42 @@ export function BorrowPage({ licenses, borrowRecords, reload, notify }) {
               <span>证照</span>
               <select value={form.license} onChange={(event) => setField('license', event.target.value)} required>
                 <option value="">选择证照</option>
-                {licenses.map((license) => (
-                  <option key={license.id} value={license.id}>
-                    {license.name} / {license.license_no}
-                  </option>
-                ))}
+                {licenses.map((license) => {
+                  const isBorrowed = borrowedLicenseMap.has(license.id)
+                  const record = borrowedLicenseMap.get(license.id)
+                  return (
+                    <option key={license.id} value={license.id} disabled={isBorrowed}>
+                      {license.name} / {license.license_no}
+                      {isBorrowed ? `  — 借出中（${record?.borrower_department}·${record?.borrower}）` : ''}
+                    </option>
+                  )
+                })}
               </select>
             </label>
+            {selectedBorrowed && (
+              <div className="field full" style={{ marginTop: '-8px', marginBottom: '8px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '10px 14px',
+                    backgroundColor: '#fef2f2',
+                    border: '1px solid #fecaca',
+                    borderRadius: '6px',
+                    color: '#b91c1c',
+                    fontSize: '13px',
+                  }}
+                >
+                  <AlertTriangle size={16} />
+                  <span>
+                    该证照正在借出中，借用人：
+                    <strong>{selectedBorrowed.borrower_department} · {selectedBorrowed.borrower}</strong>
+                    ，不能重复登记借出
+                  </span>
+                </div>
+              </div>
+            )}
             <Field label="借用人" value={form.borrower} onChange={(value) => setField('borrower', value)} required />
             <Field label="借用部门" value={form.borrower_department} onChange={(value) => setField('borrower_department', value)} required />
             <Field label="借出日期" type="date" value={form.borrow_date} onChange={(value) => setField('borrow_date', value)} required />

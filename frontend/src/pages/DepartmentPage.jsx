@@ -106,36 +106,51 @@ export function DepartmentPage({ notify }) {
                       <span>到期日期</span>
                       <span>状态</span>
                     </div>
-                    {dept.licenses.map((lic) => (
-                      <div className="table-row license-row" key={lic.id}>
-                        <div>
-                          <strong>{lic.name}</strong>
-                          <span>{lic.license_no}</span>
+                    {dept.licenses.map((lic) => {
+                      const isExpired = lic.status === 'expired'
+                      const isExpiring = lic.status === 'expiring'
+                      let rowStyle = {}
+                      let expiryTextColor = ''
+                      if (isExpired) {
+                        rowStyle = {
+                          backgroundColor: '#fef2f2',
+                          borderLeft: '4px solid #dc2626',
+                        }
+                        expiryTextColor = '#dc2626'
+                      } else if (isExpiring) {
+                        expiryTextColor = '#b45309'
+                      }
+                      return (
+                        <div className="table-row license-row" key={lic.id} style={rowStyle}>
+                          <div>
+                            <strong style={isExpired ? { color: '#991b1b' } : undefined}>{lic.name}</strong>
+                            <span>{lic.license_no}</span>
+                          </div>
+                          <div>
+                            <span>{lic.license_type_display}</span>
+                          </div>
+                          <div>
+                            <strong style={{ color: expiryTextColor }}>{lic.expiry_date}</strong>
+                            <span style={{ color: expiryTextColor }}>
+                              {lic.days_until_expiry >= 0
+                                ? `剩余 ${lic.days_until_expiry} 天`
+                                : `已过期 ${Math.abs(lic.days_until_expiry)} 天`}
+                            </span>
+                          </div>
+                          <div>
+                            <StatusBadge status={lic.status} />
+                            {lic.is_borrowed && lic.borrow_info && (
+                              <div style={{ marginTop: '6px', display: 'flex', gap: '6px', alignItems: 'center', fontSize: '12px' }}>
+                                <HandCoins size={12} style={{ color: '#92400e' }} />
+                                <span style={{ color: '#92400e' }}>
+                                  {lic.borrow_info.borrower_department} · {lic.borrow_info.borrower}
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <span>{lic.license_type_display}</span>
-                        </div>
-                        <div>
-                          <strong>{lic.expiry_date}</strong>
-                          <span>
-                            {lic.days_until_expiry >= 0
-                              ? `剩余 ${lic.days_until_expiry} 天`
-                              : `已过期 ${Math.abs(lic.days_until_expiry)} 天`}
-                          </span>
-                        </div>
-                        <div>
-                          <StatusBadge status={lic.status} />
-                          {lic.is_borrowed && lic.borrow_info && (
-                            <div style={{ marginTop: '6px', display: 'flex', gap: '6px', alignItems: 'center', fontSize: '12px' }}>
-                              <HandCoins size={12} style={{ color: '#92400e' }} />
-                              <span style={{ color: '#92400e' }}>
-                                {lic.borrow_info.borrower_department} · {lic.borrow_info.borrower}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </div>
               )}

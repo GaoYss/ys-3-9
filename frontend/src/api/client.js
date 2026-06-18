@@ -10,8 +10,31 @@ async function request(path, options = {}) {
   })
 
   if (!response.ok) {
-    const message = await response.text()
-    throw new Error(message || `Request failed: ${response.status}`)
+    let message = ''
+    try {
+      const errorData = await response.json()
+      if (typeof errorData === 'object') {
+        const messages = []
+        for (const key of Object.keys(errorData)) {
+          const value = errorData[key]
+          if (Array.isArray(value)) {
+            messages.push(...value)
+          } else if (typeof value === 'string') {
+            messages.push(value)
+          }
+        }
+        message = messages.join('；') || errorData.detail || ''
+      } else if (typeof errorData === 'string') {
+        message = errorData
+      }
+    } catch {
+      try {
+        message = await response.text()
+      } catch {
+        message = ''
+      }
+    }
+    throw new Error(message || `请求失败（状态码：${response.status}）`)
   }
 
   if (response.status === 204) {
