@@ -28,4 +28,5 @@ export const api = {
   createBorrowRecord: (data) => request('/borrow-records/', { method: 'POST', body: JSON.stringify(data) }),
   updateBorrowRecord: (id, data) => request(`/borrow-records/${id}/`, { method: 'PUT', body: JSON.stringify(data) }),
   stats: () => request('/stats/'),
+  departmentStats: () => request('/department-stats/'),
 }

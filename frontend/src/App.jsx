@@ -1,4 +1,4 @@
-import { BarChart3, ClipboardList, FileBadge2, Handshake, LayoutDashboard } from 'lucide-react'
+import { BarChart3, Building2, ClipboardList, FileBadge2, Handshake, LayoutDashboard } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
 import { api } from './api/client.js'
@@ -6,12 +6,14 @@ import { AppShell } from './components/AppShell.jsx'
 import { Toast } from './components/Toast.jsx'
 import { BorrowPage } from './pages/BorrowPage.jsx'
 import { DashboardPage } from './pages/DashboardPage.jsx'
+import { DepartmentPage } from './pages/DepartmentPage.jsx'
 import { LicensePage } from './pages/LicensePage.jsx'
 import { StatsPage } from './pages/StatsPage.jsx'
 
 const navItems = [
   { key: 'dashboard', label: '工作台', icon: LayoutDashboard },
   { key: 'licenses', label: '证照录入', icon: FileBadge2 },
+  { key: 'departments', label: '部门视图', icon: Building2 },
   { key: 'borrows', label: '借出归还', icon: Handshake },
   { key: 'stats', label: '到期统计', icon: BarChart3 },
 ]
@@ -59,6 +61,7 @@ export default function App() {
   const page = {
     dashboard: <DashboardPage {...context} />,
     licenses: <LicensePage {...context} />,
+    departments: <DepartmentPage notify={setToast} />,
     borrows: <BorrowPage {...context} />,
     stats: <StatsPage {...context} />,
   }[activePage]

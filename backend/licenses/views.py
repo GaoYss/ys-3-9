@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 from .models import BorrowRecord, License
 from .serializers import BorrowRecordSerializer, LicenseSerializer
-from .services import dashboard_stats, refresh_borrow_status, refresh_license_status
+from .services import dashboard_stats, department_stats, refresh_borrow_status, refresh_license_status
 
 
 class LicenseViewSet(viewsets.ModelViewSet):
@@ -71,3 +71,9 @@ def stats_view(_request):
             "expired": LicenseSerializer(stats["expired"], many=True).data,
         }
     )
+
+
+@api_view(["GET"])
+def department_stats_view(_request):
+    stats = department_stats()
+    return Response(stats)

@@ -470,6 +470,19 @@ textarea:focus {
   background: linear-gradient(90deg, #f1f5f9, #e2e8f0, #f1f5f9);
 }
 
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
 @media (max-width: 1040px) {
   .app-shell {
     grid-template-columns: 1fr;
