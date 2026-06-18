@@ -25,6 +25,7 @@ export default function App() {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState('')
+  const [departmentKey, setDepartmentKey] = useState(0)
 
   const loadAll = async () => {
     setLoading(true)
@@ -58,10 +59,17 @@ export default function App() {
     [licenses, borrowRecords, stats, loading],
   )
 
+  const handleNavigate = (page) => {
+    if (page === 'departments') {
+      setDepartmentKey((prev) => prev + 1)
+    }
+    setActivePage(page)
+  }
+
   const page = {
     dashboard: <DashboardPage {...context} />,
     licenses: <LicensePage {...context} />,
-    departments: <DepartmentPage notify={setToast} />,
+    departments: <DepartmentPage key={departmentKey} notify={setToast} />,
     borrows: <BorrowPage {...context} />,
     stats: <StatsPage {...context} />,
   }[activePage]
@@ -71,7 +79,7 @@ export default function App() {
       <AppShell
         activePage={activePage}
         navItems={navItems}
-        onNavigate={setActivePage}
+        onNavigate={handleNavigate}
         title="企业证照管理系统"
         subtitle="证照台账、到期提醒、借出归还与统计分析"
         headerIcon={ClipboardList}

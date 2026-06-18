@@ -62,9 +62,22 @@ class BorrowRecordSerializer(serializers.ModelSerializer):
         borrow_date = attrs.get("borrow_date", getattr(self.instance, "borrow_date", None))
         expected_return_date = attrs.get("expected_return_date", getattr(self.instance, "expected_return_date", None))
         actual_return_date = attrs.get("actual_return_date", getattr(self.instance, "actual_return_date", None))
+        license_id = attrs.get("license", getattr(self.instance, "license_id", None) if self.instance else None)
 
         if expected_return_date and borrow_date and expected_return_date < borrow_date:
             raise serializers.ValidationError({"expected_return_date": "预计归还日期不能早于借出日期"})
         if actual_return_date and borrow_date and actual_return_date < borrow_date:
             raise serializers.ValidationError({"actual_return_date": "实际归还日期不能早于借出日期"})
+
+        if license_id and not self.instance:
+            existing_borrow = BorrowRecord.objects.filter(
+                license_id=license_id,
+                status__in=[BorrowRecord.Status.BORROWED, BorrowRecord.Status.OVERDUE],
+            ).exists()
+            if existing_borrow:
+                license_obj = License.objects.get(id=license_id)
+                raise serializers.ValidationError(
+                    {"license": f"该证照「{license_obj.name}」正在借出中，无法重复登记借出"}
+                )
+
         return attrs

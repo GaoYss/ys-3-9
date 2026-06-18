@@ -53,10 +53,11 @@ export function DepartmentPage({ notify }) {
         </div>
       </div>
 
-      <div className="metrics-grid">
+      <div className="metrics-grid" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
         <MetricCard label="部门总数" value={departmentStats?.length || 0} />
         <MetricCard label="证照总数" value={totalStats?.total_licenses} />
         <MetricCard label="临期证照" value={totalStats?.expiring_licenses} tone="warning" />
+        <MetricCard label="已到期" value={totalStats?.expired_licenses} tone="danger" />
         <MetricCard label="借出中" value={totalStats?.borrowed_licenses} />
       </div>
 
@@ -78,6 +79,7 @@ export function DepartmentPage({ notify }) {
                   <div style={{ display: 'flex', gap: '8px', fontSize: '13px', color: '#64748b' }}>
                     <span>持有: <strong style={{ color: '#182033' }}>{dept.total_licenses}</strong></span>
                     <span>临期: <strong style={{ color: '#b45309' }}>{dept.expiring_licenses}</strong></span>
+                    <span>已到期: <strong style={{ color: '#b91c1c' }}>{dept.expired_licenses}</strong></span>
                     <span>借出: <strong style={{ color: '#92400e' }}>{dept.borrowed_licenses}</strong></span>
                   </div>
                   {expandedDepts[dept.department] ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
